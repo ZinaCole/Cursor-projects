@@ -41,7 +41,17 @@ public final class PttSession {
             return false;
         }
 
-        adapter.openMicrophonePath(config);
+        try {
+            adapter.openMicrophonePath(config);
+        } catch (PttException exception) {
+            try {
+                adapter.releaseTransmit(config);
+            } catch (PttException releaseException) {
+                exception.addSuppressed(releaseException);
+            }
+            fail(exception);
+            return false;
+        }
         transitionTo(PttState.TRANSMITTING, PttEvent.Type.FLOOR_GRANTED, "Transmit floor granted");
         return true;
     }
